@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import axios from "axios";
-
+import Navbar from "../components/Navbar";
 export default function Matches() {
 
   const [matches, setMatches] = useState([]);
@@ -46,6 +46,7 @@ export default function Matches() {
   return (
 
     <div>
+      <Navbar />
 
       <h1>Matches</h1>
 

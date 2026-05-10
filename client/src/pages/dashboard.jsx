@@ -1,6 +1,10 @@
+import Navbar from "../components/Navbar";
+
 import { useState } from "react";
 
 import axios from "axios";
+
+
 
 export default function Dashboard() {
 
@@ -15,7 +19,6 @@ export default function Dashboard() {
 
     try {
 
-      // Get JWT token
       const token = localStorage.getItem("token");
 
       const res = await axios.put(
@@ -25,10 +28,13 @@ export default function Dashboard() {
         {
           bio,
 
-          // Convert comma text into array
-          skillsOffered: skillsOffered.split(","),
+          skillsOffered: skillsOffered
+            .split(",")
+            .map(skill => skill.trim()),
 
-          skillsWanted: skillsWanted.split(",")
+          skillsWanted: skillsWanted
+            .split(",")
+            .map(skill => skill.trim())
         },
 
         {
@@ -58,34 +64,40 @@ export default function Dashboard() {
 
     <div>
 
-      <h1>Dashboard</h1>
+      <Navbar />
 
-      <br />
+      <div className="p-8">
 
-      <textarea
-        placeholder="Enter bio"
-        onChange={(e) => setBio(e.target.value)}
-      />
+        <h1 className="text-4xl font-bold text-blue-500 mb-6">
+          Dashboard
+        </h1>
 
-      <br /><br />
+        <textarea
+          placeholder="Enter bio"
+          className="border p-3 w-full rounded mb-4"
+          onChange={(e) => setBio(e.target.value)}
+        />
 
-      <input
-        placeholder="Skills Offered (comma separated)"
-        onChange={(e) => setSkillsOffered(e.target.value)}
-      />
+        <input
+          placeholder="Skills Offered (comma separated)"
+          className="border p-3 w-full rounded mb-4"
+          onChange={(e) => setSkillsOffered(e.target.value)}
+        />
 
-      <br /><br />
+        <input
+          placeholder="Skills Wanted (comma separated)"
+          className="border p-3 w-full rounded mb-4"
+          onChange={(e) => setSkillsWanted(e.target.value)}
+        />
 
-      <input
-        placeholder="Skills Wanted (comma separated)"
-        onChange={(e) => setSkillsWanted(e.target.value)}
-      />
+        <button
+          onClick={handleSave}
+          className="bg-blue-500 text-white px-5 py-2 rounded"
+        >
+          Save Profile
+        </button>
 
-      <br /><br />
-
-      <button onClick={handleSave}>
-        Save Profile
-      </button>
+      </div>
 
     </div>
 
