@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useNavigate, Link } from "react-router-dom";
+
 import axios from "axios";
 
 export default function Register() {
@@ -10,64 +12,109 @@ export default function Register() {
 
   const [password, setPassword] = useState("");
 
+  const navigate = useNavigate();
+
+
   const handleRegister = async () => {
 
     try {
 
-      const res = await axios.post(
+      await axios.post(
+
         "http://localhost:5000/api/auth/register",
+
         {
           name,
           email,
           password
         }
+
       );
 
       alert("Registered successfully");
 
-      console.log(res.data);
+      navigate("/");
 
     } catch (error) {
 
       console.log(error);
 
-      alert("Registration failed");
+      alert(
+        error.response?.data?.message ||
+        "Registration failed"
+      );
 
     }
 
   };
 
+
   return (
 
-    <div>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
 
-      <h1>Register</h1>
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-[400px]">
 
-      <input
-        placeholder="Name"
-        onChange={(e) => setName(e.target.value)}
-      />
+        <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">
 
-      <br /><br />
+          SkillSwap
 
-      <input
-        placeholder="Email"
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        </h1>
 
-      <br /><br />
+        <p className="text-center text-gray-500 mb-6">
 
-      <input
-        type="password"
-        placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
+          Create your account
 
-      <br /><br />
+        </p>
 
-      <button onClick={handleRegister}>
-        Register
-      </button>
+
+        <input
+          type="text"
+          placeholder="Enter name"
+          className="w-full border p-3 rounded-lg mb-4 outline-none focus:border-blue-500"
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          type="email"
+          placeholder="Enter email"
+          className="w-full border p-3 rounded-lg mb-4 outline-none focus:border-blue-500"
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Enter password"
+          className="w-full border p-3 rounded-lg mb-6 outline-none focus:border-blue-500"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button
+          onClick={handleRegister}
+          className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
+        >
+
+          Register
+
+        </button>
+
+
+        <p className="text-center mt-6 text-gray-600">
+
+          Already have an account?
+
+          <Link
+            to="/"
+            className="text-blue-600 font-semibold ml-2"
+          >
+
+            Login
+
+          </Link>
+
+        </p>
+
+      </div>
 
     </div>
 

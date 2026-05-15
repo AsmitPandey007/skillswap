@@ -1,89 +1,115 @@
 import { useState } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import axios from "axios";
 
 export default function Login() {
 
- 
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
 
- 
   const navigate = useNavigate();
 
 
-  
   const handleLogin = async () => {
 
     try {
 
-      
       const res = await axios.post(
+
         "http://localhost:5000/api/auth/login",
+
         {
           email,
           password
         }
+
       );
 
-   
       localStorage.setItem(
         "token",
         res.data.token
       );
 
-      
       alert("Login successful");
 
-      console.log(res.data);
-
-      
       navigate("/dashboard");
 
     } catch (error) {
 
-  console.log(error);
+      console.log(error);
 
-  console.log(error.response);
+      alert(
+        error.response?.data?.message ||
+        "Login failed"
+      );
 
-  alert(
-    error.response?.data?.message ||
-    "Login failed"
-  );
-
-}
+    }
 
   };
 
 
   return (
 
-    <div>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
 
-      <h1>Login</h1>
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-[400px]">
 
-      <input
-        type="email"
-        placeholder="Enter email"
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">
 
-      <br /><br />
+          SkillSwap
 
-      <input
-        type="password"
-        placeholder="Enter password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        </h1>
 
-      <br /><br />
+        <p className="text-center text-gray-500 mb-6">
 
-      <button onClick={handleLogin}>
-        Login
-      </button>
+          Login to continue
+
+        </p>
+
+
+        <input
+          type="email"
+          placeholder="Enter email"
+          className="w-full border p-3 rounded-lg mb-4 outline-none focus:border-blue-500"
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Enter password"
+          className="w-full border p-3 rounded-lg mb-6 outline-none focus:border-blue-500"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button
+          onClick={handleLogin}
+          className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
+        >
+
+          Login
+
+        </button>
+
+
+        <p className="text-center mt-6 text-gray-600">
+
+          Don't have an account?
+
+          <Link
+            to="/register"
+            className="text-blue-600 font-semibold ml-2"
+          >
+
+            Register
+
+          </Link>
+
+        </p>
+
+      </div>
 
     </div>
 
