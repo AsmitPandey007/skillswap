@@ -111,6 +111,12 @@ export default function Matches() {
 
                       </h2>
 
+                      <p className="text-green-600 font-semibold">
+
+                    {user.matchPercentage}% Match
+
+                           </p>
+
                     </div>
 
                   </div>
@@ -121,6 +127,37 @@ export default function Matches() {
                     {user.bio}
 
                   </p>
+
+                  <div className="mb-6">
+
+  <h3 className="font-semibold mb-2 text-purple-600">
+
+    Matched Skills
+
+  </h3>
+
+  <div className="flex flex-wrap gap-2">
+
+    {
+
+      user.matchedSkills.map((skill, index) => (
+
+        <span
+          key={index}
+          className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm"
+        >
+
+          {skill}
+
+        </span>
+
+      ))
+
+    }
+
+  </div>
+
+</div>
 
 
                   <div className="mb-4">

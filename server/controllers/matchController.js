@@ -1,54 +1,91 @@
 const User = require("../models/User");
 
 
-// FIND MATCHES
-exports.findMatches = async (req, res) => {
+// GET MATCHES
+exports.getMatches = async (req, res) => {
 
   try {
 
-    // Logged-in user
+    // Current logged in user
     const currentUser = await User.findById(
       req.user.id
     );
 
-    // Get all users except current user
+
+    // Get all other users
     const users = await User.find({
-      _id: { $ne: req.user.id }
+
+      _id: {
+        $ne: req.user.id
+      }
+
     });
 
-    let matches = [];
+
+    // Store matched users
+    const matches = [];
+
 
     users.forEach((user) => {
 
-      // Check if user offers skill I want
-      const offeredMatch = user.skillsOffered.some(
+      // Find matched skills
+      const matchedSkills = currentUser.skillsWanted.filter(
+
         (skill) =>
-          currentUser.skillsWanted.includes(skill)
+
+          user.skillsOffered.includes(skill)
+
       );
 
-      // Check if user wants skill I offer
-      const wantedMatch = user.skillsWanted.some(
-        (skill) =>
-          currentUser.skillsOffered.includes(skill)
+
+      // Calculate percentage
+      const matchPercentage = Math.round(
+
+        (matchedSkills.length /
+
+          currentUser.skillsWanted.length) * 100
+
       );
 
-      // Perfect exchange match
-      if (offeredMatch && wantedMatch) {
 
-        matches.push(user);
+      // Only include if at least 1 skill matched
+      if (matchedSkills.length > 0) {
+
+        matches.push({
+
+          _id: user._id,
+
+          name: user.name,
+
+          bio: user.bio,
+
+          skillsOffered: user.skillsOffered,
+
+          skillsWanted: user.skillsWanted,
+
+          matchedSkills,
+
+          matchPercentage
+
+        });
 
       }
 
     });
 
+
     res.json({
+
       matches
+
     });
 
   } catch (error) {
 
     res.status(500).json({
+
       message: error.message
+
     });
 
   }
