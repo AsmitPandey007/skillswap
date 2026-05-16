@@ -1,52 +1,54 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { Routes, Route } from "react-router-dom";
+
 import Login from "./pages/Login";
+
 import Register from "./pages/Register";
+
 import Dashboard from "./pages/Dashboard";
+
 import Matches from "./pages/Matches";
-function App() {
+
+import ProtectedRoute from "./components/ProtectedRoute";
+
+
+export default function App() {
 
   return (
 
-    <BrowserRouter>
+    <Routes>
 
-      <Routes>
+      <Route path="/" element={<Login />} />
 
-        <Route path="/" element={<Login />} />
-
-        <Route path="/register" element={<Register />} />
-
-        <Route
-
-  path="/dashboard"
-
-  element={
-    <ProtectedRoute>
-      <Dashboard />
-    </ProtectedRoute>
-  }
-
-/>
+      <Route path="/register" element={<Register />} />
 
 
-<Route
+      <Route
 
-  path="/matches"
+        path="/dashboard"
 
-  element={
-    <ProtectedRoute>
-      <Matches />
-    </ProtectedRoute>
-  }
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
 
-/>
+      />
 
-      </Routes>
 
-    </BrowserRouter>
+      <Route
+
+        path="/matches"
+
+        element={
+          <ProtectedRoute>
+            <Matches />
+          </ProtectedRoute>
+        }
+
+      />
+
+    </Routes>
 
   );
 
 }
-
-export default App;

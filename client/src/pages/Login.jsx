@@ -4,11 +4,16 @@ import { useNavigate, Link } from "react-router-dom";
 
 import axios from "axios";
 
+import toast from "react-hot-toast";
+
+
 export default function Login() {
 
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -16,6 +21,8 @@ export default function Login() {
   const handleLogin = async () => {
 
     try {
+
+      setLoading(true);
 
       const res = await axios.post(
 
@@ -33,7 +40,7 @@ export default function Login() {
         res.data.token
       );
 
-      alert("Login successful");
+      toast.success("Login successful");
 
       navigate("/dashboard");
 
@@ -41,10 +48,14 @@ export default function Login() {
 
       console.log(error);
 
-      alert(
+      toast.error(
         error.response?.data?.message ||
         "Login failed"
       );
+
+    } finally {
+
+      setLoading(false);
 
     }
 
@@ -73,23 +84,34 @@ export default function Login() {
         <input
           type="email"
           placeholder="Enter email"
+          value={email}
           className="w-full border p-3 rounded-lg mb-4 outline-none focus:border-blue-500"
           onChange={(e) => setEmail(e.target.value)}
         />
 
+
         <input
           type="password"
           placeholder="Enter password"
+          value={password}
           className="w-full border p-3 rounded-lg mb-6 outline-none focus:border-blue-500"
           onChange={(e) => setPassword(e.target.value)}
         />
 
+
         <button
           onClick={handleLogin}
+          disabled={loading}
           className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
         >
 
-          Login
+          {
+            loading
+            ?
+            "Logging in..."
+            :
+            "Login"
+          }
 
         </button>
 
