@@ -127,7 +127,7 @@ export default function Dashboard() {
 
         </h1>
 
-        <p className="text-gray-500 mb-8">
+        <p className="text-gray-200-500 mb-8">
 
           Update your profile and skills
 
