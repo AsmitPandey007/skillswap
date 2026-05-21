@@ -1,3 +1,5 @@
+
+import { API_URL } from "../config";
 import { useEffect, useState } from "react";
 
 import axios from "axios";
@@ -24,7 +26,7 @@ export default function Matches() {
 
       const res = await axios.get(
 
-        "http://localhost:5000/api/match",
+        `${API_URL}/api/match`,
 
         {
           headers: {

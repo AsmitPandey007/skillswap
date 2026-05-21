@@ -1,3 +1,5 @@
+
+import { API_URL } from "../config";
 import { useEffect, useState } from "react";
 
 import axios from "axios";
@@ -73,7 +75,7 @@ export default function Dashboard() {
 
       const res = await axios.put(
 
-        "http://localhost:5000/api/user/update",
+        `${API_URL}/api/user/update`,
 
         {
           bio,
