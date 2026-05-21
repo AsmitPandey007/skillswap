@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 
 import Register from "./pages/Register";
 
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/dashboard";
 
 import Matches from "./pages/Matches";
 
