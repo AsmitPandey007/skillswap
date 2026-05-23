@@ -1,10 +1,13 @@
-
 import { API_URL } from "../config";
+
 import { useEffect, useState } from "react";
 
 import axios from "axios";
 
 import Navbar from "../components/Navbar";
+
+import toast from "react-hot-toast";
+
 
 export default function Dashboard() {
 
@@ -16,8 +19,11 @@ export default function Dashboard() {
 
   const [user, setUser] = useState(null);
 
+  const [image, setImage] = useState(null);
 
-  // Fetch profile on page load
+  const [profileImage, setProfileImage] = useState("");
+
+
   useEffect(() => {
 
     fetchProfile();
@@ -26,6 +32,7 @@ export default function Dashboard() {
 
 
   // GET PROFILE
+
   const fetchProfile = async () => {
 
     try {
@@ -34,30 +41,49 @@ export default function Dashboard() {
 
       const res = await axios.get(
 
-        "http://localhost:5000/api/user/profile",
+        `${API_URL}/api/user/profile`,
 
         {
           headers: {
+
             Authorization: token
+
           }
+
         }
 
       );
 
-      setBio(res.data.bio || "");
+
+      setBio(
+
+        res.data.bio || ""
+
+      );
 
       setSkillsOffered(
+
         res.data.skillsOffered.join(", ")
+
       );
 
       setSkillsWanted(
+
         res.data.skillsWanted.join(", ")
+
       );
 
-      // Save full user data
+      setProfileImage(
+
+        res.data.profileImage || ""
+
+      );
+
       setUser(res.data);
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.log(error);
 
@@ -66,53 +92,147 @@ export default function Dashboard() {
   };
 
 
-  // UPDATE PROFILE
+  // SAVE PROFILE
+
   const handleSave = async () => {
 
     try {
 
       const token = localStorage.getItem("token");
 
-      const res = await axios.put(
+      await axios.put(
 
         `${API_URL}/api/user/update`,
 
         {
+
           bio,
 
           skillsOffered: skillsOffered
+
             .split(",")
+
             .map(skill => skill.trim()),
 
+
           skillsWanted: skillsWanted
+
             .split(",")
+
             .map(skill => skill.trim())
+
         },
 
         {
+
           headers: {
+
             Authorization: token
+
           }
+
         }
 
       );
 
-      alert("Profile updated");
+      toast.success(
 
-      console.log(res.data);
+        "Profile updated"
 
-    } catch (error) {
+      );
+
+    }
+
+    catch(error){
 
       console.log(error);
 
-      alert(
-        error.response?.data?.message ||
+      toast.error(
+
         "Update failed"
+
       );
 
     }
 
   };
+
+
+  // IMAGE UPLOAD
+
+  const handleImageUpload = async()=>{
+
+try{
+
+if(!image){
+
+toast.error(
+"Select an image first"
+);
+
+return;
+
+}
+
+const token=
+localStorage.getItem(
+"token"
+);
+
+const formData=
+new FormData();
+
+formData.append(
+"image",
+image
+);
+
+const res=
+await axios.post(
+
+`${API_URL}/api/user/upload-image`,
+
+formData,
+
+{
+
+headers:{
+
+Authorization:token
+
+}
+
+}
+
+);
+
+setProfileImage(
+res.data.profileImage
+);
+
+toast.success(
+"Image uploaded"
+);
+
+}
+
+catch(error){
+
+console.log(
+error.response?.data
+);
+
+toast.error(
+
+error.response?.data?.message ||
+
+"Upload failed"
+
+);
+
+}
+
+};
 
 
   return (
@@ -123,79 +243,194 @@ export default function Dashboard() {
 
       <div className="max-w-3xl mx-auto mt-10 bg-white p-8 rounded-2xl shadow-lg">
 
+
         <h1 className="text-4xl font-bold text-blue-600 mb-2">
 
           Dashboard
 
         </h1>
 
-        <p className="text-gray-200-500 mb-8">
+        <p className="text-gray-500 mb-8">
 
           Update your profile and skills
 
         </p>
 
 
+        {/* PROFILE IMAGE */}
+
+
+        <div className="mb-8">
+
+          <h2 className="font-bold mb-3">
+
+            Profile Picture
+
+          </h2>
+
+
+          {
+
+            profileImage && (
+
+              <img
+
+                src={profileImage}
+
+                alt="profile"
+
+                className="w-28 h-28 rounded-full object-cover mb-4"
+
+              />
+
+            )
+
+          }
+
+
+          <input
+
+            type="file"
+
+            onChange={(e)=>
+
+              setImage(
+
+                e.target.files[0]
+
+              )
+
+            }
+
+          />
+
+
+          <button
+
+            onClick={handleImageUpload}
+
+            className="bg-blue-600 text-white px-4 py-2 rounded mt-3"
+
+          >
+
+            Upload Image
+
+          </button>
+
+        </div>
+
+
+
         {/* BIO */}
+
 
         <div className="mb-6">
 
           <label className="block font-semibold mb-2">
+
             Bio
+
           </label>
 
+
           <textarea
+
             value={bio}
-            placeholder="Tell others about yourself..."
-            className="w-full border p-4 rounded-lg outline-none focus:border-blue-500"
+
             rows="4"
-            onChange={(e) => setBio(e.target.value)}
+
+            className="w-full border p-4 rounded-lg"
+
+            onChange={(e)=>
+
+              setBio(
+
+                e.target.value
+
+              )
+
+            }
+
           />
 
         </div>
+
 
 
         {/* SKILLS OFFERED */}
 
+
         <div className="mb-6">
 
           <label className="block font-semibold mb-2">
+
             Skills Offered
+
           </label>
 
+
           <input
+
             value={skillsOffered}
-            placeholder="Java, React, UI Design"
-            className="w-full border p-4 rounded-lg outline-none focus:border-blue-500"
-            onChange={(e) => setSkillsOffered(e.target.value)}
+
+            className="w-full border p-4 rounded-lg"
+
+            onChange={(e)=>
+
+              setSkillsOffered(
+
+                e.target.value
+
+              )
+
+            }
+
           />
 
         </div>
+
 
 
         {/* SKILLS WANTED */}
 
+
         <div className="mb-8">
 
           <label className="block font-semibold mb-2">
+
             Skills Wanted
+
           </label>
 
+
           <input
+
             value={skillsWanted}
-            placeholder="DSA, Node.js"
-            className="w-full border p-4 rounded-lg outline-none focus:border-blue-500"
-            onChange={(e) => setSkillsWanted(e.target.value)}
+
+            className="w-full border p-4 rounded-lg"
+
+            onChange={(e)=>
+
+              setSkillsWanted(
+
+                e.target.value
+
+              )
+
+            }
+
           />
 
         </div>
 
 
-        {/* SAVE BUTTON */}
 
         <button
+
           onClick={handleSave}
-          className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold hover:bg-blue-700 transition"
+
+          className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold"
+
         >
 
           Save Profile

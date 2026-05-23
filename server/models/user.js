@@ -36,7 +36,17 @@ const userSchema = new mongoose.Schema({
   rating: {
     type: Number,
     default: 0
-  }
+  },
+
+  profileImage: {
+
+  type: String,
+
+  default: ""
+
+}
+
+ 
 
 }, { timestamps: true });
 

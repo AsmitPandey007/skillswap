@@ -2,15 +2,35 @@ const router = require("express").Router();
 
 const auth = require("../middleware/authMiddleware");
 
+const upload = require("../middleware/upload");
+
 const {
   updateProfile,
-  getProfile
+  getProfile,
+  uploadProfileImage
 } = require("../controllers/userController");
 
 
-// Protected route
-router.put("/update", auth, updateProfile);
-router.get("/profile", auth, getProfile);
+router.put(
+  "/update",
+  auth,
+  updateProfile
+);
+
+
+router.get(
+  "/profile",
+  auth,
+  getProfile
+);
+
+
+router.post(
+  "/upload-image",
+  auth,
+  upload.single("image"),
+  uploadProfileImage
+);
 
 
 module.exports = router;

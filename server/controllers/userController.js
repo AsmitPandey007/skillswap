@@ -41,6 +41,68 @@ exports.updateProfile = async (req, res) => {
 
 };
 
+// UPLOAD PROFILE IMAGE
+const cloudinary = require("../config/cloudinary");
+
+exports.uploadProfileImage = async(req,res)=>{
+
+try{
+
+if(!req.file){
+
+return res.status(400).json({
+
+message:"No image selected"
+
+});
+
+}
+
+const result = await cloudinary.uploader.upload(
+
+`data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+
+{
+
+folder:"skillswap"
+
+}
+
+);
+
+const user = await User.findById(
+
+req.user.id
+
+);
+
+user.profileImage = result.secure_url;
+
+await user.save();
+
+res.json({
+
+message:"Image uploaded",
+
+profileImage:user.profileImage
+
+});
+
+}
+
+catch(error){
+
+console.log(error);
+
+res.status(500).json({
+
+message:error.message
+
+});
+
+}
+
+};
 
 // GET PROFILE
 exports.getProfile = async (req, res) => {
@@ -62,3 +124,5 @@ exports.getProfile = async (req, res) => {
   }
 
 };
+
+
