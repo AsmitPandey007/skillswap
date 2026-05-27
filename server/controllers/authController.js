@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 
 const jwt = require("jsonwebtoken");
 
+const JWT_SECRET = process.env.JWT_SECRET || "secretkey";
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -84,7 +85,7 @@ exports.login = async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { id: user._id },
-      "secretkey",
+      JWT_SECRET,
       { expiresIn: "7d" }
     );
 

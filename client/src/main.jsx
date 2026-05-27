@@ -9,6 +9,9 @@ import { Toaster } from "react-hot-toast";
 import App from "./App.jsx";
 
 import "./index.css";
+import { applyTheme, getInitialTheme } from "./theme";
+
+applyTheme(getInitialTheme());
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(

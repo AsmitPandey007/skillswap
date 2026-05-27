@@ -7,6 +7,7 @@ import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
 
 import Matches from "./pages/Matches";
+import Chat from "./pages/Chat";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -45,6 +46,15 @@ export default function App() {
           </ProtectedRoute>
         }
 
+      />
+
+      <Route
+        path="/chat/:userId"
+        element={
+          <ProtectedRoute>
+            <Chat />
+          </ProtectedRoute>
+        }
       />
 
     </Routes>

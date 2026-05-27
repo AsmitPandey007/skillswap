@@ -53,9 +53,9 @@ export default function Register() {
 
   return (
 
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center dark:bg-gray-950">
 
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-[400px]">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-[400px] dark:bg-gray-900 dark:text-gray-100">
 
         <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">
 
@@ -63,7 +63,7 @@ export default function Register() {
 
         </h1>
 
-        <p className="text-center text-gray-500 mb-6">
+        <p className="text-center text-gray-500 mb-6 dark:text-gray-400">
 
           Create your account
 
@@ -73,21 +73,21 @@ export default function Register() {
         <input
           type="text"
           placeholder="Enter name"
-          className="w-full border p-3 rounded-lg mb-4 outline-none focus:border-blue-500"
+          className="w-full border p-3 rounded-lg mb-4 outline-none focus:border-blue-500 dark:bg-gray-950 dark:border-gray-800"
           onChange={(e) => setName(e.target.value)}
         />
 
         <input
           type="email"
           placeholder="Enter email"
-          className="w-full border p-3 rounded-lg mb-4 outline-none focus:border-blue-500"
+          className="w-full border p-3 rounded-lg mb-4 outline-none focus:border-blue-500 dark:bg-gray-950 dark:border-gray-800"
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="password"
           placeholder="Enter password"
-          className="w-full border p-3 rounded-lg mb-6 outline-none focus:border-blue-500"
+          className="w-full border p-3 rounded-lg mb-6 outline-none focus:border-blue-500 dark:bg-gray-950 dark:border-gray-800"
           onChange={(e) => setPassword(e.target.value)}
         />
 
@@ -101,7 +101,7 @@ export default function Register() {
         </button>
 
 
-        <p className="text-center mt-6 text-gray-600">
+        <p className="text-center mt-6 text-gray-600 dark:text-gray-300">
 
           Already have an account?
 

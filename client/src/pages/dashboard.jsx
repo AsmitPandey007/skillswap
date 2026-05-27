@@ -237,11 +237,11 @@ error.response?.data?.message ||
 
   return (
 
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950">
 
       <Navbar user={user} />
 
-      <div className="max-w-3xl mx-auto mt-10 bg-white p-8 rounded-2xl shadow-lg">
+      <div className="max-w-3xl mx-auto mt-10 bg-white p-8 rounded-2xl shadow-lg dark:bg-gray-900 dark:text-gray-100">
 
 
         <h1 className="text-4xl font-bold text-blue-600 mb-2">
@@ -339,7 +339,7 @@ error.response?.data?.message ||
 
             rows="4"
 
-            className="w-full border p-4 rounded-lg"
+            className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
 
             onChange={(e)=>
 
@@ -373,7 +373,7 @@ error.response?.data?.message ||
 
             value={skillsOffered}
 
-            className="w-full border p-4 rounded-lg"
+            className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
 
             onChange={(e)=>
 
@@ -407,7 +407,7 @@ error.response?.data?.message ||
 
             value={skillsWanted}
 
-            className="w-full border p-4 rounded-lg"
+            className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
 
             onChange={(e)=>
 

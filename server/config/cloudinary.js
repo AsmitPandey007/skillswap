@@ -8,9 +8,4 @@ cloudinary.config({
 
 });
 
-console.log(
-  process.env.CLOUD_NAME,
-  process.env.CLOUD_API_KEY
-);
-
 module.exports = cloudinary;

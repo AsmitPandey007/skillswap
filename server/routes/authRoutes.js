@@ -1,5 +1,7 @@
 const router = require("express").Router();
 
+const dbReady = require("../middleware/dbReady");
+
 const {
   register,
   login
@@ -7,11 +9,11 @@ const {
 
 
 // Register route
-router.post("/register", register);
+router.post("/register", dbReady, register);
 
 
 // Login route
-router.post("/login", login);
+router.post("/login", dbReady, login);
 
 
 module.exports = router;
