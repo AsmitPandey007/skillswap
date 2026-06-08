@@ -39,14 +39,33 @@ const userSchema = new mongoose.Schema({
   },
 
   profileImage: {
+    type: String,
+    default: ""
+  },
 
-  type: String,
+  skillsOfferedEmbedding: {
+    type: [Number],
+    default: []
+  },
 
-  default: ""
+  skillsWantedEmbedding: {
+    type: [Number],
+    default: []
+  },
 
-}
+  skillsOfferedVectors: [{
+    skill: String,
+    vector: [Number]
+  }],
 
- 
+  skillsWantedVectors: [{
+    skill: String,
+    vector: [Number]
+  }],
+
+  embeddingUpdatedAt: {
+    type: Date
+  }
 
 }, { timestamps: true });
 

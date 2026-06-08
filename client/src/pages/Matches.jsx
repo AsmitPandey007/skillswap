@@ -16,6 +16,7 @@ export default function Matches() {
   const [wantedAny, setWantedAny] = useState("");
   const [sort, setSort] = useState("best");
   const [loading, setLoading] = useState(false);
+  const [recommendationEngine, setRecommendationEngine] = useState("exact-match");
 
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export default function Matches() {
       );
 
       setMatches(res.data.matches);
+      setRecommendationEngine(res.data.recommendationEngine || "exact-match");
 
     } catch (error) {
 
@@ -86,10 +88,12 @@ export default function Matches() {
 
         </h1>
 
-        <p className="text-gray-500 mb-8">
+        <p className="text-gray-500 mb-2 dark:text-gray-400">
+          Your skills are set in <strong>Dashboard</strong>. This page compares you to all other users automatically.
+        </p>
 
-          Students who match your learning goals
-
+        <p className="text-sm text-purple-600 mb-8 dark:text-purple-300">
+          Engine: {recommendationEngine === "semantic-ai" ? "Semantic AI" : "Exact match (add OPENAI_API_KEY for AI)"}
         </p>
 
         <div className="bg-white p-4 rounded-2xl shadow mb-6 dark:bg-gray-900 dark:text-gray-100">
@@ -97,7 +101,7 @@ export default function Matches() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search name, bio, skills..."
+              placeholder="Filter by their name (e.g. Asmit)"
               className="md:col-span-2 border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
             />
 
@@ -118,7 +122,7 @@ export default function Matches() {
             <input
               value={offeredAny}
               onChange={(e) => setOfferedAny(e.target.value)}
-              placeholder="Offered skills (csv)"
+              placeholder="They offer: dsa, node.js"
               className="border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
             />
 
@@ -126,7 +130,7 @@ export default function Matches() {
               <input
                 value={wantedAny}
                 onChange={(e) => setWantedAny(e.target.value)}
-                placeholder="Wanted skills (csv)"
+                placeholder="They want: react"
                 className="flex-1 border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
               />
               <select
@@ -135,10 +139,15 @@ export default function Matches() {
                 className="border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
               >
                 <option value="best">Best</option>
+                <option value="semantic">Semantic</option>
                 <option value="name">Name</option>
               </select>
             </div>
           </div>
+
+          <p className="text-xs text-gray-500 mt-2 dark:text-gray-400">
+            Filters narrow results only. Set Min % to 0 first if you see no matches.
+          </p>
 
           <div className="flex justify-between items-center mt-3">
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -211,10 +220,13 @@ export default function Matches() {
                       </h2>
 
                       <p className="text-green-600 font-semibold">
-
-                    {user.matchPercentage}% Match
-
-                           </p>
+                        {user.matchPercentage}% Match
+                      </p>
+                      {user.recommendationType === "semantic" && (
+                        <p className="text-xs text-purple-600 dark:text-purple-300">
+                          Semantic score: {user.semanticScore}%
+                        </p>
+                      )}
 
                     </div>
 
@@ -241,36 +253,42 @@ export default function Matches() {
 
                   </p>
 
-                  <div className="mb-6">
+                  {user.matchedSkills?.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="font-semibold mb-2 text-purple-600">
+                        Exact Matched Skills
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {user.matchedSkills.map((skill, index) => (
+                          <span
+                            key={index}
+                            className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-  <h3 className="font-semibold mb-2 text-purple-600">
-
-    Matched Skills
-
-  </h3>
-
-  <div className="flex flex-wrap gap-2">
-
-    {
-
-      user.matchedSkills.map((skill, index) => (
-
-        <span
-          key={index}
-          className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm"
-        >
-
-          {skill}
-
-        </span>
-
-      ))
-
-    }
-
-  </div>
-
-</div>
+                  {user.semanticMatches?.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="font-semibold mb-2 text-indigo-600">
+                        AI Semantic Matches
+                      </h3>
+                      <div className="space-y-2">
+                        {user.semanticMatches.map((pair, index) => (
+                          <div
+                            key={index}
+                            className="bg-indigo-50 text-indigo-800 px-3 py-2 rounded-xl text-sm dark:bg-indigo-950 dark:text-indigo-200"
+                          >
+                            You want <strong>{pair.wanted}</strong> ↔ they offer{" "}
+                            <strong>{pair.offered}</strong> ({pair.similarity}% similar)
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
 
                   <div className="mb-4">

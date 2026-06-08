@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { buildUserEmbeddings, isEmbeddingAvailable } = require("../services/embeddingService");
 
 
 // UPDATE PROFILE
@@ -12,18 +13,25 @@ exports.updateProfile = async (req, res) => {
       skillsWanted
     } = req.body;
 
-    const user = await User.findByIdAndUpdate(
+    const update = {
+      bio,
+      skillsOffered,
+      skillsWanted
+    };
 
-      req.user.id,
-
-      {
+    if (isEmbeddingAvailable()) {
+      const embeddings = await buildUserEmbeddings({
         bio,
         skillsOffered,
         skillsWanted
-      },
+      });
+      Object.assign(update, embeddings);
+    }
 
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      update,
       { new: true }
-
     );
 
     res.json({

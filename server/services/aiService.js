@@ -1,29 +1,50 @@
-const OpenAI = require("openai");
+const {
+  ensureUserEmbeddings,
+  computeSwapScore,
+  findSemanticSkillMatches,
+  findExactMatches,
+  scoreToPercentage,
+  isEmbeddingAvailable,
+} = require("./embeddingService");
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
-exports.matchUsersAI = async (users, currentUser) => {
-  const prompt = `
-  Current user:
-  Offers: ${currentUser.skillsOffered}
-  Wants: ${currentUser.skillsWanted}
+exports.recommendMatches = async (users, currentUser) => {
+  if (!isEmbeddingAvailable()) {
+    return {
+      engine: "exact-match",
+      recommendations: [],
+      message: "OPENAI_API_KEY is not configured. Semantic recommendations are disabled.",
+    };
+  }
 
-  Other users:
-  ${users.map(u => `
-    Name: ${u.name}
-    Offers: ${u.skillsOffered}
-    Wants: ${u.skillsWanted}
-  `).join("\n")}
+  const currentWithEmbeddings = await ensureUserEmbeddings(currentUser);
+  const recommendations = [];
 
-  Suggest top 3 matches for skill exchange.
-  `;
+  for (const user of users) {
+    const candidate = await ensureUserEmbeddings(user);
+    const semanticScore = computeSwapScore(currentWithEmbeddings, candidate);
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4.1-mini",
-    messages: [{ role: "user", content: prompt }]
-  });
+    if (semanticScore === null || semanticScore < 0.55) {
+      continue;
+    }
 
-  return response.choices[0].message.content;
+    recommendations.push({
+      userId: user._id,
+      name: user.name,
+      semanticScore: scoreToPercentage(semanticScore),
+      exactMatches: findExactMatches(currentUser.skillsWanted, user.skillsOffered),
+      semanticMatches: findSemanticSkillMatches(
+        currentWithEmbeddings.skillsWantedVectors,
+        candidate.skillsOfferedVectors
+      ),
+    });
+  }
+
+  recommendations.sort((a, b) => b.semanticScore - a.semanticScore);
+
+  return {
+    engine: "semantic-ai",
+    model: "text-embedding-3-small",
+    recommendations: recommendations.slice(0, 10),
+  };
 };
