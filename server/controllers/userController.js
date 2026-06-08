@@ -10,13 +10,21 @@ exports.updateProfile = async (req, res) => {
     const {
       bio,
       skillsOffered,
-      skillsWanted
+      skillsWanted,
+      location,
+      skillLevel,
+      availability,
+      languages
     } = req.body;
 
     const update = {
       bio,
       skillsOffered,
-      skillsWanted
+      skillsWanted,
+      location: String(location || "").trim(),
+      skillLevel: skillLevel || "",
+      availability: Array.isArray(availability) ? availability : [],
+      languages: Array.isArray(languages) ? languages : []
     };
 
     if (isEmbeddingAvailable()) {
@@ -25,18 +33,25 @@ exports.updateProfile = async (req, res) => {
         skillsOffered,
         skillsWanted
       });
-      Object.assign(update, embeddings);
+      if (embeddings) {
+        Object.assign(update, embeddings);
+      }
     }
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
       update,
-      { new: true }
+      { new: true, runValidators: true }
     );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     res.json({
       message: "Profile updated",
-      user
+      user,
+      embeddingsUpdated: Boolean(update.embeddingUpdatedAt)
     });
 
   } catch (error) {

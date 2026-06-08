@@ -33,6 +33,27 @@ const userSchema = new mongoose.Schema({
     default: ""
   },
 
+  location: {
+    type: String,
+    default: ""
+  },
+
+  skillLevel: {
+    type: String,
+    enum: ["beginner", "intermediate", "advanced", "expert", ""],
+    default: ""
+  },
+
+  availability: {
+    type: [String],
+    default: []
+  },
+
+  languages: {
+    type: [String],
+    default: []
+  },
+
   rating: {
     type: Number,
     default: 0

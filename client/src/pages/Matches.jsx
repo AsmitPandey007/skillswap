@@ -15,6 +15,10 @@ export default function Matches() {
   const [offeredAny, setOfferedAny] = useState("");
   const [wantedAny, setWantedAny] = useState("");
   const [sort, setSort] = useState("best");
+  const [location, setLocation] = useState("");
+  const [skillLevel, setSkillLevel] = useState("any");
+  const [availability, setAvailability] = useState("");
+  const [language, setLanguage] = useState("");
   const [loading, setLoading] = useState(false);
   const [recommendationEngine, setRecommendationEngine] = useState("exact-match");
 
@@ -46,6 +50,10 @@ export default function Matches() {
             minMatch: minMatch || undefined,
             offeredAny: offeredAny || undefined,
             wantedAny: wantedAny || undefined,
+            location: location || undefined,
+            skillLevel: skillLevel !== "any" ? skillLevel : undefined,
+            availability: availability || undefined,
+            language: language || undefined,
             sort: sort || undefined
           }
         }
@@ -71,7 +79,7 @@ export default function Matches() {
     }, 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, minMatch, offeredAny, wantedAny, sort]);
+  }, [q, minMatch, offeredAny, wantedAny, location, skillLevel, availability, language, sort]);
 
 
   return (
@@ -93,7 +101,9 @@ export default function Matches() {
         </p>
 
         <p className="text-sm text-purple-600 mb-8 dark:text-purple-300">
-          Engine: {recommendationEngine === "semantic-ai" ? "Semantic AI" : "Exact match (add OPENAI_API_KEY for AI)"}
+          Hybrid: skill matching + location, level, availability & language filters
+          {" · "}
+          Engine: {recommendationEngine === "semantic-ai" ? "Semantic AI" : "Exact match"}
         </p>
 
         <div className="bg-white p-4 rounded-2xl shadow mb-6 dark:bg-gray-900 dark:text-gray-100">
@@ -138,15 +148,54 @@ export default function Matches() {
                 onChange={(e) => setSort(e.target.value)}
                 className="border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
               >
-                <option value="best">Best</option>
+                <option value="best">Best (hybrid)</option>
+                <option value="hybrid">Hybrid</option>
                 <option value="semantic">Semantic</option>
                 <option value="name">Name</option>
               </select>
             </div>
           </div>
 
+          <div className="grid md:grid-cols-4 gap-3 mt-3">
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Their location (e.g. Mumbai)"
+              className="border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
+            />
+            <select
+              value={skillLevel}
+              onChange={(e) => setSkillLevel(e.target.value)}
+              className="border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
+            >
+              <option value="any">Any skill level</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="expert">Expert</option>
+            </select>
+            <select
+              value={availability}
+              onChange={(e) => setAvailability(e.target.value)}
+              className="border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
+            >
+              <option value="">Any availability</option>
+              <option value="weekdays">Weekdays</option>
+              <option value="weekends">Weekends</option>
+              <option value="mornings">Mornings</option>
+              <option value="evenings">Evenings</option>
+              <option value="flexible">Flexible</option>
+            </select>
+            <input
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              placeholder="Their language (e.g. English)"
+              className="border rounded-xl px-3 py-2 dark:bg-gray-950 dark:border-gray-800"
+            />
+          </div>
+
           <p className="text-xs text-gray-500 mt-2 dark:text-gray-400">
-            Filters narrow results only. Set Min % to 0 first if you see no matches.
+            Hybrid filters narrow who appears. Your own profile fields are set in Dashboard.
           </p>
 
           <div className="flex justify-between items-center mt-3">
@@ -159,6 +208,10 @@ export default function Matches() {
                 setMinMatch(0);
                 setOfferedAny("");
                 setWantedAny("");
+                setLocation("");
+                setSkillLevel("any");
+                setAvailability("");
+                setLanguage("");
                 setSort("best");
               }}
               className="text-sm text-blue-600 hover:underline dark:text-blue-300"
@@ -220,13 +273,11 @@ export default function Matches() {
                       </h2>
 
                       <p className="text-green-600 font-semibold">
-                        {user.matchPercentage}% Match
+                        {user.hybridMatchPercentage ?? user.matchPercentage}% Hybrid Match
                       </p>
-                      {user.recommendationType === "semantic" && (
-                        <p className="text-xs text-purple-600 dark:text-purple-300">
-                          Semantic score: {user.semanticScore}%
-                        </p>
-                      )}
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Skills {user.matchPercentage}% · Profile fit {user.profileFit ?? 0}%
+                      </p>
 
                     </div>
 
@@ -236,7 +287,7 @@ export default function Matches() {
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
                       <div
                         className="h-full bg-green-500"
-                        style={{ width: `${user.matchPercentage}%` }}
+                        style={{ width: `${user.hybridMatchPercentage ?? user.matchPercentage}%` }}
                       />
                     </div>
                     {typeof user.rating === "number" && (
@@ -247,11 +298,38 @@ export default function Matches() {
                   </div>
 
 
-                  <p className="text-gray-600 mb-6">
-
+                  <p className="text-gray-600 mb-4 dark:text-gray-300">
                     {user.bio}
-
                   </p>
+
+                  <div className="flex flex-wrap gap-2 mb-6 text-sm">
+                    {user.location && (
+                      <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full dark:bg-gray-800 dark:text-gray-200">
+                        {user.location}
+                      </span>
+                    )}
+                    {user.skillLevel && (
+                      <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full capitalize dark:bg-amber-950 dark:text-amber-200">
+                        {user.skillLevel}
+                      </span>
+                    )}
+                    {(user.languages || []).map((lang, index) => (
+                      <span
+                        key={index}
+                        className="bg-sky-100 text-sky-800 px-3 py-1 rounded-full dark:bg-sky-950 dark:text-sky-200"
+                      >
+                        {lang}
+                      </span>
+                    ))}
+                    {(user.availability || []).map((slot, index) => (
+                      <span
+                        key={index}
+                        className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full capitalize dark:bg-orange-950 dark:text-orange-200"
+                      >
+                        {slot}
+                      </span>
+                    ))}
+                  </div>
 
                   {user.matchedSkills?.length > 0 && (
                     <div className="mb-6">

@@ -64,30 +64,39 @@ async function embedSkillList(skills) {
 }
 
 async function buildUserEmbeddings(user) {
-  const offeredText = buildOfferedText(user);
-  const wantedText = buildWantedText(user);
+  if (!getClient()) {
+    return null;
+  }
 
-  const [profileVectors, offeredSkillVectors, wantedSkillVectors] = await Promise.all([
-    embedTexts([offeredText, wantedText].filter(Boolean)),
-    embedSkillList(user.skillsOffered),
-    embedSkillList(user.skillsWanted),
-  ]);
+  try {
+    const offeredText = buildOfferedText(user);
+    const wantedText = buildWantedText(user);
 
-  let offeredIdx = 0;
-  let wantedIdx = 0;
+    const [profileVectors, offeredSkillVectors, wantedSkillVectors] = await Promise.all([
+      embedTexts([offeredText, wantedText].filter(Boolean)),
+      embedSkillList(user.skillsOffered),
+      embedSkillList(user.skillsWanted),
+    ]);
 
-  const skillsOfferedEmbedding = offeredText ? profileVectors[offeredIdx++] : [];
-  const skillsWantedEmbedding = wantedText
-    ? profileVectors[offeredText ? offeredIdx : wantedIdx++]
-    : [];
+    let offeredIdx = 0;
+    let wantedIdx = 0;
 
-  return {
-    skillsOfferedEmbedding,
-    skillsWantedEmbedding,
-    skillsOfferedVectors: offeredSkillVectors,
-    skillsWantedVectors: wantedSkillVectors,
-    embeddingUpdatedAt: new Date(),
-  };
+    const skillsOfferedEmbedding = offeredText ? profileVectors[offeredIdx++] : [];
+    const skillsWantedEmbedding = wantedText
+      ? profileVectors[offeredText ? offeredIdx : wantedIdx++]
+      : [];
+
+    return {
+      skillsOfferedEmbedding,
+      skillsWantedEmbedding,
+      skillsOfferedVectors: offeredSkillVectors,
+      skillsWantedVectors: wantedSkillVectors,
+      embeddingUpdatedAt: new Date(),
+    };
+  } catch (error) {
+    console.error("Failed to generate embeddings:", error.message);
+    return null;
+  }
 }
 
 async function ensureUserEmbeddings(userDoc) {

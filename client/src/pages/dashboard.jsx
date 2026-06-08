@@ -22,6 +22,18 @@ export default function Dashboard() {
   const [image, setImage] = useState(null);
 
   const [profileImage, setProfileImage] = useState("");
+  const [location, setLocation] = useState("");
+  const [skillLevel, setSkillLevel] = useState("");
+  const [availability, setAvailability] = useState([]);
+  const [languages, setLanguages] = useState("");
+
+  const availabilityOptions = [
+    "weekdays",
+    "weekends",
+    "mornings",
+    "evenings",
+    "flexible",
+  ];
 
 
   useEffect(() => {
@@ -62,22 +74,21 @@ export default function Dashboard() {
       );
 
       setSkillsOffered(
-
-        res.data.skillsOffered.join(", ")
-
+        (res.data.skillsOffered || []).join(", ")
       );
 
       setSkillsWanted(
-
-        res.data.skillsWanted.join(", ")
-
+        (res.data.skillsWanted || []).join(", ")
       );
 
       setProfileImage(
-
         res.data.profileImage || ""
-
       );
+
+      setLocation(res.data.location || "");
+      setSkillLevel(res.data.skillLevel || "");
+      setAvailability(res.data.availability || []);
+      setLanguages((res.data.languages || []).join(", "));
 
       setUser(res.data);
 
@@ -116,11 +127,15 @@ export default function Dashboard() {
 
 
           skillsWanted: skillsWanted
-
             .split(",")
-
-            .map(skill => skill.trim())
-
+            .map(skill => skill.trim()),
+          location,
+          skillLevel,
+          availability,
+          languages: languages
+            .split(",")
+            .map((lang) => lang.trim())
+            .filter(Boolean)
         },
 
         {
@@ -135,11 +150,7 @@ export default function Dashboard() {
 
       );
 
-      toast.success(
-
-        "Profile updated"
-
-      );
+      toast.success("Profile updated");
 
     }
 
@@ -148,9 +159,7 @@ export default function Dashboard() {
       console.log(error);
 
       toast.error(
-
-        "Update failed"
-
+        error.response?.data?.message || "Update failed"
       );
 
     }
@@ -390,6 +399,79 @@ error.response?.data?.message ||
         </div>
 
 
+
+        <div className="mb-6">
+          <label className="block font-semibold mb-2">
+            Location
+          </label>
+          <input
+            value={location}
+            placeholder="e.g. Mumbai, Delhi, Remote"
+            className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="block font-semibold mb-2">
+            Skill Level
+          </label>
+          <select
+            value={skillLevel}
+            className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
+            onChange={(e) => setSkillLevel(e.target.value)}
+          >
+            <option value="">Select level</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+            <option value="expert">Expert</option>
+          </select>
+        </div>
+
+        <div className="mb-6">
+          <label className="block font-semibold mb-2">
+            Availability
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {availabilityOptions.map((slot) => (
+              <label
+                key={slot}
+                className={`px-3 py-2 rounded-lg border cursor-pointer text-sm capitalize ${
+                  availability.includes(slot)
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "dark:border-gray-800"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={availability.includes(slot)}
+                  onChange={() => {
+                    setAvailability((prev) =>
+                      prev.includes(slot)
+                        ? prev.filter((item) => item !== slot)
+                        : [...prev, slot]
+                    );
+                  }}
+                />
+                {slot}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <label className="block font-semibold mb-2">
+            Languages
+          </label>
+          <input
+            value={languages}
+            placeholder="e.g. English, Hindi"
+            className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
+            onChange={(e) => setLanguages(e.target.value)}
+          />
+        </div>
 
         {/* SKILLS WANTED */}
 

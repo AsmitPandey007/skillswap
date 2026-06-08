@@ -7,17 +7,13 @@ const {
   scoreToPercentage,
   isEmbeddingAvailable,
 } = require("../services/embeddingService");
-
-const normalize = (value) =>
-  String(value || "")
-    .toLowerCase()
-    .trim();
-
-const parseCsv = (value) =>
-  String(value || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+const {
+  normalize,
+  parseCsv,
+  computeProfileFit,
+  computeHybridPercentage,
+  passesHybridFilters,
+} = require("../utils/hybridFilter");
 
 const buildMatchPayload = (user, currentUser, semanticScore) => {
   const exactMatchedSkills = findExactMatches(
@@ -41,12 +37,19 @@ const buildMatchPayload = (user, currentUser, semanticScore) => {
     ? Math.round(semanticPercentage * 0.65 + exactPercentage * 0.35)
     : exactPercentage;
 
+  const profileFit = computeProfileFit(currentUser, user);
+  const hybridMatchPercentage = computeHybridPercentage(matchPercentage, profileFit);
+
   return {
     _id: user._id,
     name: user.name,
     bio: user.bio,
     profileImage: user.profileImage,
     rating: user.rating,
+    location: user.location || "",
+    skillLevel: user.skillLevel || "",
+    availability: user.availability || [],
+    languages: user.languages || [],
     skillsOffered: user.skillsOffered,
     skillsWanted: user.skillsWanted,
     matchedSkills: exactMatchedSkills,
@@ -54,6 +57,8 @@ const buildMatchPayload = (user, currentUser, semanticScore) => {
     matchPercentage,
     semanticScore: semanticPercentage,
     exactMatchPercentage: exactPercentage,
+    profileFit: Math.round(profileFit * 100),
+    hybridMatchPercentage,
     recommendationType: semanticScore !== null ? "semantic" : "exact",
   };
 };
@@ -108,16 +113,31 @@ exports.getMatches = async (req, res) => {
     const offeredAny = parseCsv(req.query.offeredAny).map(normalize);
     const wantedAny = parseCsv(req.query.wantedAny).map(normalize);
     const sort = normalize(req.query.sort || "best");
+    const useHybridSort = sort === "hybrid" || sort === "best";
+
+    const hybridFilters = {
+      location: req.query.location,
+      skillLevel: req.query.skillLevel,
+      availability: req.query.availability,
+      language: req.query.language,
+    };
 
     let filtered = matches.filter((m) => {
-      if (Number.isFinite(minMatch) && minMatch > 0 && m.matchPercentage < minMatch) {
-        return false;
+      if (Number.isFinite(minMatch) && minMatch > 0) {
+        const score = useHybridSort ? m.hybridMatchPercentage : m.matchPercentage;
+        if (score < minMatch) {
+          return false;
+        }
       }
 
       if (q) {
         const haystack = [
           m.name,
           m.bio,
+          m.location,
+          m.skillLevel,
+          ...(m.languages || []),
+          ...(m.availability || []),
           ...(m.skillsOffered || []),
           ...(m.skillsWanted || []),
           ...(m.matchedSkills || []),
@@ -141,6 +161,10 @@ exports.getMatches = async (req, res) => {
         if (!ok) return false;
       }
 
+      if (!passesHybridFilters(m, hybridFilters)) {
+        return false;
+      }
+
       return true;
     });
 
@@ -148,6 +172,10 @@ exports.getMatches = async (req, res) => {
       filtered = filtered.sort((a, b) => normalize(a.name).localeCompare(normalize(b.name)));
     } else if (sort === "semantic") {
       filtered = filtered.sort((a, b) => (b.semanticScore || 0) - (a.semanticScore || 0));
+    } else if (sort === "hybrid" || sort === "best") {
+      filtered = filtered.sort(
+        (a, b) => (b.hybridMatchPercentage || 0) - (a.hybridMatchPercentage || 0)
+      );
     } else {
       filtered = filtered.sort((a, b) => (b.matchPercentage || 0) - (a.matchPercentage || 0));
     }
@@ -156,6 +184,7 @@ exports.getMatches = async (req, res) => {
       matches: filtered,
       total: filtered.length,
       recommendationEngine: useSemantic ? "semantic-ai" : "exact-match",
+      filterMode: "hybrid",
     });
   } catch (error) {
     res.status(500).json({
