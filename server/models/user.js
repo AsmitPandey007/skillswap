@@ -59,6 +59,11 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
 
+  ratingCount: {
+    type: Number,
+    default: 0
+  },
+
   profileImage: {
     type: String,
     default: ""

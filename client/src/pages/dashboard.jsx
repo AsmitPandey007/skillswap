@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import Navbar from "../components/Navbar";
+import { StarDisplay } from "../components/StarRating";
 
 import toast from "react-hot-toast";
 
@@ -259,11 +260,20 @@ error.response?.data?.message ||
 
         </h1>
 
-        <p className="text-gray-500 mb-8">
-
+        <p className="text-gray-500 mb-2 dark:text-gray-400">
           Update your profile and skills
-
         </p>
+
+        {user && (
+          <div className="mb-8">
+            <p className="text-sm text-gray-500 mb-1 dark:text-gray-400">Your reputation</p>
+            <StarDisplay
+              rating={user.rating}
+              count={user.ratingCount || 0}
+              size="lg"
+            />
+          </div>
+        )}
 
 
         {/* PROFILE IMAGE */}

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import Navbar from "../components/Navbar";
+import { StarDisplay } from "../components/StarRating";
 import { Link } from "react-router-dom";
 
 export default function Matches() {
@@ -290,11 +291,12 @@ export default function Matches() {
                         style={{ width: `${user.hybridMatchPercentage ?? user.matchPercentage}%` }}
                       />
                     </div>
-                    {typeof user.rating === "number" && (
-                      <p className="text-sm text-gray-500 mt-2">
-                        Rating: {user.rating.toFixed(1)}
-                      </p>
-                    )}
+                    <div className="mt-2">
+                      <StarDisplay
+                        rating={user.rating}
+                        count={user.ratingCount}
+                      />
+                    </div>
                   </div>
 
 

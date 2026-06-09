@@ -46,6 +46,7 @@ const buildMatchPayload = (user, currentUser, semanticScore) => {
     bio: user.bio,
     profileImage: user.profileImage,
     rating: user.rating,
+    ratingCount: user.ratingCount || 0,
     location: user.location || "",
     skillLevel: user.skillLevel || "",
     availability: user.availability || [],
