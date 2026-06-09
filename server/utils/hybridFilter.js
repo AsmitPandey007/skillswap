@@ -90,7 +90,7 @@ function passesHybridFilters(match, filters) {
   if (filters.location) {
     const needle = normalize(filters.location);
     const haystack = normalize(match.location);
-    if (!haystack.includes(needle)) {
+    if (!haystack || (!haystack.includes(needle) && !needle.includes(haystack))) {
       return false;
     }
   }

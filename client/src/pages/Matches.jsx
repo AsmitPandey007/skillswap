@@ -3,10 +3,25 @@ import { API_URL } from "../config";
 import { useEffect, useState } from "react";
 
 import axios from "axios";
+import toast from "react-hot-toast";
 
 import Navbar from "../components/Navbar";
 import { StarDisplay } from "../components/StarRating";
 import { Link } from "react-router-dom";
+
+function getConnectionForUser(userId, connections, myId) {
+  const req = connections.find(
+    (r) =>
+      (String(r.from) === String(myId) && String(r.to) === String(userId)) ||
+      (String(r.from) === String(userId) && String(r.to) === String(myId))
+  );
+  if (!req) return { status: "none" };
+  if (req.status === "accepted") return { status: "accepted", requestId: req._id };
+  if (String(req.from) === String(myId)) {
+    return { status: "pending_sent", requestId: req._id, note: req.note };
+  }
+  return { status: "pending_received", requestId: req._id, note: req.note };
+}
 
 export default function Matches() {
 
@@ -22,12 +37,30 @@ export default function Matches() {
   const [language, setLanguage] = useState("");
   const [loading, setLoading] = useState(false);
   const [recommendationEngine, setRecommendationEngine] = useState("exact-match");
+  const [connections, setConnections] = useState([]);
+  const [myId, setMyId] = useState("");
+  const [requestTarget, setRequestTarget] = useState(null);
+  const [requestNote, setRequestNote] = useState("");
+  const [sendingRequest, setSendingRequest] = useState(false);
 
+
+  const fetchConnections = async () => {
+    const token = localStorage.getItem("token");
+    const [connRes, profileRes] = await Promise.all([
+      axios.get(`${API_URL}/api/requests/connections`, {
+        headers: { Authorization: token },
+      }),
+      axios.get(`${API_URL}/api/user/profile`, {
+        headers: { Authorization: token },
+      }),
+    ]);
+    setConnections(connRes.data.requests || []);
+    setMyId(profileRes.data._id);
+  };
 
   useEffect(() => {
-
     fetchMatches();
-
+    fetchConnections().catch(() => {});
   }, []);
 
 
@@ -82,6 +115,47 @@ export default function Matches() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, minMatch, offeredAny, wantedAny, location, skillLevel, availability, language, sort]);
 
+  const sendRequest = async () => {
+    if (!requestTarget) return;
+    const note = requestNote.trim();
+    if (!note) {
+      toast.error("Write a short note to impress them");
+      return;
+    }
+
+    try {
+      setSendingRequest(true);
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/api/requests`,
+        { toUserId: requestTarget._id, note },
+        { headers: { Authorization: token } }
+      );
+      toast.success("Request sent!");
+      setRequestTarget(null);
+      setRequestNote("");
+      await fetchConnections();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not send request");
+    } finally {
+      setSendingRequest(false);
+    }
+  };
+
+  const acceptRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/api/requests/${requestId}/accept`,
+        {},
+        { headers: { Authorization: token } }
+      );
+      toast.success("Accepted! You can chat now.");
+      await fetchConnections();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not accept");
+    }
+  };
 
   return (
 
@@ -196,7 +270,8 @@ export default function Matches() {
           </div>
 
           <p className="text-xs text-gray-500 mt-2 dark:text-gray-400">
-            Hybrid filters narrow who appears. Your own profile fields are set in Dashboard.
+            Filters describe <strong>the other person</strong>, not you. Search name only: type &quot;koko&quot; and click Clear filters for the rest.
+            Both users must save Dashboard first.
           </p>
 
           <div className="flex justify-between items-center mt-3">
@@ -231,10 +306,13 @@ export default function Matches() {
           <div className="bg-white p-8 rounded-2xl shadow text-center dark:bg-gray-900">
 
             <p className="text-gray-500 text-lg">
-
               {loading ? "Loading matches..." : "No matches found"}
-
             </p>
+            {!loading && (
+              <p className="text-sm text-gray-400 mt-3 dark:text-gray-500">
+                Tip: click Clear filters. Make sure KOKO saved skills in Dashboard (login as KOKO → Save Profile).
+              </p>
+            )}
 
           </div>
 
@@ -434,13 +512,65 @@ export default function Matches() {
 
                   </div>
 
-                  <div className="mt-6 flex justify-end">
-                    <Link
-                      to={`/chat/${user._id}`}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                    >
-                      Message
-                    </Link>
+                  <div className="mt-6 flex flex-wrap justify-end gap-2">
+                    {(() => {
+                      const conn = getConnectionForUser(user._id, connections, myId);
+
+                      if (conn.status === "accepted") {
+                        return (
+                          <Link
+                            to={`/chat/${user._id}`}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                          >
+                            Message
+                          </Link>
+                        );
+                      }
+
+                      if (conn.status === "pending_sent") {
+                        return (
+                          <span className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg dark:bg-gray-800 dark:text-gray-300">
+                            Request sent
+                          </span>
+                        );
+                      }
+
+                      if (conn.status === "pending_received") {
+                        return (
+                          <>
+                            <p className="w-full text-sm text-amber-700 bg-amber-50 rounded-lg p-3 mb-1 dark:bg-amber-950/40 dark:text-amber-200">
+                              &ldquo;{conn.note}&rdquo;
+                            </p>
+                            <button
+                              onClick={() => acceptRequest(conn.requestId)}
+                              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+                            >
+                              Accept
+                            </button>
+                            <Link
+                              to="/requests"
+                              className="text-blue-600 px-4 py-2 hover:underline dark:text-blue-300"
+                            >
+                              All requests
+                            </Link>
+                          </>
+                        );
+                      }
+
+                      return (
+                        <button
+                          onClick={() => {
+                            setRequestTarget(user);
+                            setRequestNote(
+                              `Hi ${user.name}! I'd love to swap skills with you — I think we'd be a great match.`
+                            );
+                          }}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                        >
+                          Send Request
+                        </button>
+                      );
+                    })()}
                   </div>
 
                 </div>
@@ -454,6 +584,48 @@ export default function Matches() {
         }
 
       </div>
+
+      {requestTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 dark:bg-gray-900 dark:text-gray-100">
+            <h2 className="text-xl font-bold mb-1">
+              Send request to {requestTarget.name}
+            </h2>
+            <p className="text-sm text-gray-500 mb-4 dark:text-gray-400">
+              Add a short note to impress them and explain why you want to swap skills.
+            </p>
+            <textarea
+              value={requestNote}
+              onChange={(e) => setRequestNote(e.target.value)}
+              rows={4}
+              maxLength={250}
+              placeholder="Hi! I can teach React and I'd love to learn Python from you..."
+              className="w-full border rounded-xl px-3 py-2 mb-2 dark:bg-gray-950 dark:border-gray-800"
+            />
+            <p className="text-xs text-gray-400 mb-4 text-right">
+              {requestNote.length}/250
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setRequestTarget(null);
+                  setRequestNote("");
+                }}
+                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={sendRequest}
+                disabled={sendingRequest}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+              >
+                {sendingRequest ? "Sending..." : "Send Request"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
 

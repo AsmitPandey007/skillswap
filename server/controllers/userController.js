@@ -1,6 +1,15 @@
 const User = require("../models/user");
 const { buildUserEmbeddings, isEmbeddingAvailable } = require("../services/embeddingService");
 
+const normalizeList = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
 
 // UPDATE PROFILE
 exports.updateProfile = async (req, res) => {
@@ -17,10 +26,19 @@ exports.updateProfile = async (req, res) => {
       languages
     } = req.body;
 
+    const offered = normalizeList(skillsOffered);
+    const wanted = normalizeList(skillsWanted);
+
+    if (offered.length === 0 && wanted.length === 0) {
+      return res.status(400).json({
+        message: "Add at least one skill in Skills Offered or Skills Wanted (comma-separated)",
+      });
+    }
+
     const update = {
       bio,
-      skillsOffered,
-      skillsWanted,
+      skillsOffered: offered,
+      skillsWanted: wanted,
       location: String(location || "").trim(),
       skillLevel: skillLevel || "",
       availability: Array.isArray(availability) ? availability : [],

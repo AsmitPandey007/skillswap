@@ -98,15 +98,7 @@ exports.getMatches = async (req, res) => {
         : null;
 
       const payload = buildMatchPayload(user, currentWithEmbeddings, semanticScore);
-
-      const hasExactMatch = payload.matchedSkills.length > 0;
-      const hasSemanticMatch =
-        semanticScore !== null && semanticScore >= 0.55;
-      const hasSemanticSkillPairs = payload.semanticMatches.length > 0;
-
-      if (hasExactMatch || hasSemanticMatch || hasSemanticSkillPairs) {
-        matches.push(payload);
-      }
+      matches.push(payload);
     }
 
     const q = normalize(req.query.q);
@@ -151,14 +143,18 @@ exports.getMatches = async (req, res) => {
       }
 
       if (offeredAny.length > 0) {
-        const offeredSet = new Set((m.skillsOffered || []).map(normalize));
-        const ok = offeredAny.some((s) => offeredSet.has(s));
+        const offered = (m.skillsOffered || []).map(normalize);
+        const ok = offeredAny.some((needle) =>
+          offered.some((skill) => skill.includes(needle) || needle.includes(skill))
+        );
         if (!ok) return false;
       }
 
       if (wantedAny.length > 0) {
-        const wantedSet = new Set((m.skillsWanted || []).map(normalize));
-        const ok = wantedAny.some((s) => wantedSet.has(s));
+        const wanted = (m.skillsWanted || []).map(normalize);
+        const ok = wantedAny.some((needle) =>
+          wanted.some((skill) => skill.includes(needle) || needle.includes(skill))
+        );
         if (!ok) return false;
       }
 

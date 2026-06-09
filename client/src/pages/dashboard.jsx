@@ -106,65 +106,49 @@ export default function Dashboard() {
 
   // SAVE PROFILE
 
+  const parseList = (value) =>
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
   const handleSave = async () => {
+    const offered = parseList(skillsOffered);
+    const wanted = parseList(skillsWanted);
+
+    if (offered.length === 0 && wanted.length === 0) {
+      toast.error("Add skills first — comma-separated, e.g. React, Node.js");
+      return;
+    }
 
     try {
-
       const token = localStorage.getItem("token");
 
-      await axios.put(
-
+      const res = await axios.put(
         `${API_URL}/api/user/update`,
-
         {
-
           bio,
-
-          skillsOffered: skillsOffered
-
-            .split(",")
-
-            .map(skill => skill.trim()),
-
-
-          skillsWanted: skillsWanted
-            .split(",")
-            .map(skill => skill.trim()),
+          skillsOffered: offered,
+          skillsWanted: wanted,
           location,
           skillLevel,
           availability,
-          languages: languages
-            .split(",")
-            .map((lang) => lang.trim())
-            .filter(Boolean)
+          languages: parseList(languages),
         },
-
         {
-
-          headers: {
-
-            Authorization: token
-
-          }
-
+          headers: { Authorization: token },
         }
-
       );
 
-      toast.success("Profile updated");
-
-    }
-
-    catch(error){
-
+      await fetchProfile();
+      const saved = res.data.user;
+      toast.success(
+        `Saved! Offered: ${(saved.skillsOffered || []).join(", ") || "—"} | Wanted: ${(saved.skillsWanted || []).join(", ") || "—"}`
+      );
+    } catch (error) {
       console.log(error);
-
-      toast.error(
-        error.response?.data?.message || "Update failed"
-      );
-
+      toast.error(error.response?.data?.message || "Update failed");
     }
-
   };
 
 
@@ -389,26 +373,27 @@ error.response?.data?.message ||
 
 
           <input
-
             value={skillsOffered}
-
+            placeholder="Comma-separated, e.g. dsa, data structures, python"
             className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
-
-            onChange={(e)=>
-
-              setSkillsOffered(
-
-                e.target.value
-
-              )
-
-            }
-
+            onChange={(e) => setSkillsOffered(e.target.value)}
           />
-
         </div>
 
-
+        <div className="mb-6">
+          <label className="block font-semibold mb-2">
+            Skills Wanted
+          </label>
+          <input
+            value={skillsWanted}
+            placeholder="Comma-separated, e.g. frontend, react"
+            className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
+            onChange={(e) => setSkillsWanted(e.target.value)}
+          />
+          <p className="text-xs text-amber-600 mt-2 dark:text-amber-400">
+            Required: at least one skill above. Use commas — not separate lines.
+          </p>
+        </div>
 
         <div className="mb-6">
           <label className="block font-semibold mb-2">
@@ -482,40 +467,6 @@ error.response?.data?.message ||
             onChange={(e) => setLanguages(e.target.value)}
           />
         </div>
-
-        {/* SKILLS WANTED */}
-
-
-        <div className="mb-8">
-
-          <label className="block font-semibold mb-2">
-
-            Skills Wanted
-
-          </label>
-
-
-          <input
-
-            value={skillsWanted}
-
-            className="w-full border p-4 rounded-lg dark:bg-gray-950 dark:border-gray-800"
-
-            onChange={(e)=>
-
-              setSkillsWanted(
-
-                e.target.value
-
-              )
-
-            }
-
-          />
-
-        </div>
-
-
 
         <button
 

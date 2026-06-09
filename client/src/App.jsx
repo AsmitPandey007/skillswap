@@ -8,6 +8,7 @@ import Dashboard from "./pages/dashboard";
 
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
+import Requests from "./pages/Requests";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -46,6 +47,15 @@ export default function App() {
           </ProtectedRoute>
         }
 
+      />
+
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute>
+            <Requests />
+          </ProtectedRoute>
+        }
       />
 
       <Route

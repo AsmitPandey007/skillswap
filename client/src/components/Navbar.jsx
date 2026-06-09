@@ -9,6 +9,7 @@ export default function Navbar({ user }) {
 
   const navigate = useNavigate();
   const [unread, setUnread] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState(0);
 
 
   const handleLogout = () => {
@@ -23,17 +24,33 @@ export default function Navbar({ user }) {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    axios
-      .get(`${API_URL}/api/notifications`, {
-        headers: { Authorization: token }
-      })
-      .then((res) => setUnread(res.data.unreadCount || 0))
-      .catch(() => {});
+    const loadCounts = () => {
+      axios
+        .get(`${API_URL}/api/notifications`, {
+          headers: { Authorization: token },
+        })
+        .then((res) => setUnread(res.data.unreadCount || 0))
+        .catch(() => {});
+
+      axios
+        .get(`${API_URL}/api/requests/incoming`, {
+          headers: { Authorization: token },
+        })
+        .then((res) => setPendingRequests(res.data.requests?.length || 0))
+        .catch(() => {});
+    };
+
+    loadCounts();
 
     const s = getSocket();
     const onNotif = () => setUnread((u) => u + 1);
+    const onRequest = () => loadCounts();
     s.on("notification:new", onNotif);
-    return () => s.off("notification:new", onNotif);
+    s.on("request:new", onRequest);
+    return () => {
+      s.off("notification:new", onNotif);
+      s.off("request:new", onRequest);
+    };
   }, []);
 
   const markAllRead = async () => {
@@ -71,6 +88,18 @@ export default function Navbar({ user }) {
           className="hover:text-gray-200"
         >
           Matches
+        </Link>
+
+        <Link
+          to="/requests"
+          className="relative hover:text-gray-200"
+        >
+          Requests
+          {pendingRequests > 0 && (
+            <span className="absolute -top-2 -right-3 bg-amber-400 text-gray-900 text-xs font-bold px-1.5 py-0.5 rounded-full">
+              {pendingRequests}
+            </span>
+          )}
         </Link>
 
         <button

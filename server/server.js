@@ -44,6 +44,7 @@ app.use("/api/match", require("./routes/matchRoutes"));
 app.use("/api/chat", require("./routes/chatRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/ratings", require("./routes/ratingRoutes"));
+app.use("/api/requests", require("./routes/swapRequestRoutes"));
 
 app.get("/api/health", (req, res) => {
   const dbState = mongoose.connection.readyState;
@@ -86,6 +87,8 @@ io.use((socket, next) => {
     next(new Error("Unauthorized"));
   }
 });
+
+app.set("io", io);
 
 io.on("connection", (socket) => {
   socket.join(`user:${socket.userId}`);
