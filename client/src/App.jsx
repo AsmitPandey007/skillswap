@@ -10,6 +10,7 @@ import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
 import Requests from "./pages/Requests";
 import Projects from "./pages/Projects";
+import Hackathons from "./pages/Hackathons";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -64,6 +65,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Projects />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/hackathons"
+        element={
+          <ProtectedRoute>
+            <Hackathons />
           </ProtectedRoute>
         }
       />
