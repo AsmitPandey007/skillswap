@@ -91,6 +91,13 @@ export default function Navbar({ user }) {
         </Link>
 
         <Link
+          to="/projects"
+          className="hover:text-gray-200"
+        >
+          Projects
+        </Link>
+
+        <Link
           to="/requests"
           className="relative hover:text-gray-200"
         >

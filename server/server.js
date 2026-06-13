@@ -45,6 +45,7 @@ app.use("/api/chat", require("./routes/chatRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/ratings", require("./routes/ratingRoutes"));
 app.use("/api/requests", require("./routes/swapRequestRoutes"));
+app.use("/api/projects", require("./routes/projectRoutes"));
 
 app.get("/api/health", (req, res) => {
   const dbState = mongoose.connection.readyState;
