@@ -5,6 +5,7 @@ const {
   listProjects,
   applyToProject,
   updateApplicationStatus,
+  startProject,
 } = require("../controllers/projectController");
 
 // Create a project posting
@@ -18,5 +19,7 @@ router.post("/:id/apply", auth, applyToProject);
 
 // Accept or reject an application
 router.post("/:id/applications/:appId/status", auth, updateApplicationStatus);
+
+router.post("/:id/start", auth, startProject);
 
 module.exports = router;

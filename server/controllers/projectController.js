@@ -198,3 +198,55 @@ exports.updateApplicationStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+//-----------------------------
+
+exports.startProject = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found",
+      });
+    }
+
+    // Only owner can start
+    if (String(project.owner) !== String(req.user.id)) {
+      return res.status(403).json({
+        message: "Only project owner can start project",
+      });
+    }
+
+    // Already started
+    if (project.status !== "recruiting") {
+      return res.status(400).json({
+        message: "Project already started",
+      });
+    }
+
+    const acceptedMembers = project.applications.filter(
+      (app) => app.status === "accepted"
+    );
+
+    if (acceptedMembers.length < project.teamSize) {
+      return res.status(400).json({
+        message: "Team is not full yet",
+      });
+    }
+
+    project.status = "active";
+
+    await project.save();
+
+    res.json({
+      message: "Project started successfully",
+      project,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
