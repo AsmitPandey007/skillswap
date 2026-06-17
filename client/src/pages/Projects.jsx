@@ -163,6 +163,37 @@ export default function Projects() {
     }
   };
 
+  const handleStartProject = async (projectId) => {
+    try {
+      const token = localStorage.getItem("token");
+  
+      const res = await axios.post(
+        `${API_URL}/api/projects/${projectId}/start`,
+        {},
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+  
+      toast.success("Project started successfully!");
+  
+      setProjects((prev) =>
+        prev.map((p) =>
+          p._id === projectId ? res.data.project : p
+        )
+      );
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+        "Could not start project"
+      );
+    }
+  };
+
+
+
   // Filter projects by title description or skills
   const filteredProjects = projects.filter((project) => {
     const query = searchQuery.toLowerCase();
@@ -244,6 +275,8 @@ export default function Projects() {
               const myApplication = project.applications.find(
                 (app) => currentUser && String(app.applicant?._id || app.applicant) === String(currentUser._id)
               );
+
+
               const acceptedTeammates = project.applications.filter((app) => app.status === "accepted");
 
               return (
@@ -280,9 +313,24 @@ export default function Projects() {
                       <span className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-lg text-sm font-medium border border-gray-200/30 dark:border-gray-700/30">
                         ⏱️ {project.duration}
                       </span>
+
                       <span className="bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 px-3 py-1 rounded-lg text-sm font-medium border border-green-200/30 dark:border-green-800/30">
                         👥 {acceptedTeammates.length} / {project.teamSize} Teammates
                       </span>
+                      <span
+  className={`px-3 py-1 rounded-lg text-sm font-medium border
+  ${
+    project.status === "active"
+      ? "bg-green-100 text-green-700"
+      : project.status === "completed"
+      ? "bg-blue-100 text-blue-700"
+      : project.status === "aborted"
+      ? "bg-red-100 text-red-700"
+      : "bg-yellow-100 text-yellow-700"
+  }`}
+>
+{(project.status || "recruiting").toUpperCase()}
+</span>
                     </div>
                   </div>
 
@@ -390,7 +438,20 @@ export default function Projects() {
                     {/* Owner: Manage Applications */}
                     {isOwner && (
                       <div className="w-full">
+
+{(project.status || "recruiting") === "recruiting" && (
+    <div className="mb-4">
+      <button
+        onClick={() => handleStartProject(project._id)}
+        className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl font-semibold"
+      >
+        🚀 Start Project
+      </button>
+    </div>
+)}
+
                         <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1.5">
+                          
                           Applications Received
                           <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs px-2 py-0.5 rounded-full font-semibold">
                             {project.applications.length}

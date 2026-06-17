@@ -238,12 +238,22 @@ exports.startProject = async (req, res) => {
 
     project.status = "active";
 
-    await project.save();
+await project.save();
 
-    res.json({
-      message: "Project started successfully",
-      project,
-    });
+const updatedProject = await Project.findById(project._id)
+  .populate("owner", "name profileImage rating ratingCount skillsOffered")
+  .populate(
+    "applications.applicant",
+    "name profileImage rating ratingCount skillsOffered"
+  )
+  .lean();
+
+res.json({
+  message: "Project started successfully",
+  project: updatedProject,
+});
+
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
