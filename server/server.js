@@ -20,6 +20,7 @@ const io = new Server(server, {
 });
 
 const Message = require("./models/message");
+const ProjectMessage = require("./models/projectMessage");
 const Notification = require("./models/notification");
 const { _conversationIdFor } = require("./controllers/chatController");
 const jwt = require("jsonwebtoken");
@@ -42,6 +43,10 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/match", require("./routes/matchRoutes"));
 app.use("/api/chat", require("./routes/chatRoutes"));
+app.use(
+  "/api/project-chat",
+  require("./routes/projectChatRoutes")
+);
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/ratings", require("./routes/ratingRoutes"));
 app.use("/api/requests", require("./routes/swapRequestRoutes"));
@@ -95,6 +100,19 @@ app.set("io", io);
 io.on("connection", (socket) => {
   socket.join(`user:${socket.userId}`);
 
+
+
+  socket.on("project:join", (projectId) => {
+    socket.join(`project:${projectId}`);
+    });
+    
+    socket.on("project:leave", (projectId) => {
+    socket.leave(`project:${projectId}`);
+    });
+
+    
+
+
   socket.on("chat:send", async ({ to, text }) => {
     try {
       const trimmed = String(text || "").trim();
@@ -123,7 +141,43 @@ io.on("connection", (socket) => {
       // swallow per-message errors
     }
   });
+
+  socket.on(
+    "project:send",
+    async ({ projectId, text }) => {
+    try {
+    const trimmed = String(text || "").trim();
+    
+    
+      if (!projectId || !trimmed) return;
+    
+      const msg = await ProjectMessage.create({
+        project: projectId,
+        sender: socket.userId,
+        text: trimmed,
+      });
+    
+      const populated =
+        await ProjectMessage.findById(msg._id)
+          .populate("sender", "name")
+          .lean();
+    
+      io.to(`project:${projectId}`).emit(
+        "project:new",
+        populated
+      );
+    } catch (e) {
+      console.error(e);
+    }
+    
+    
+    }
+    );
+    
+  
 });
+
+
 
 const PORT = process.env.PORT || 5000;
 

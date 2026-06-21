@@ -12,7 +12,9 @@ import Requests from "./pages/Requests";
 import Projects from "./pages/Projects";
 import Hackathons from "./pages/Hackathons";
 
+
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProjectWorkspace from "./pages/ProjectWorkspace";
 
 
 export default function App() {
@@ -86,6 +88,15 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+<Route
+  path="/projects/:projectId/workspace"
+  element={
+    <ProtectedRoute>
+      <ProjectWorkspace />
+    </ProtectedRoute>
+  }
+/>
 
     </Routes>
 

@@ -1,5 +1,6 @@
 import { API_URL } from "../config";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
@@ -7,6 +8,7 @@ import { StarDisplay } from "../components/StarRating";
 import { getSocket } from "../socket";
 
 export default function Projects() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -439,16 +441,27 @@ export default function Projects() {
                     {isOwner && (
                       <div className="w-full">
 
-{(project.status || "recruiting") === "recruiting" && (
-    <div className="mb-4">
-      <button
-        onClick={() => handleStartProject(project._id)}
-        className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl font-semibold"
-      >
-        🚀 Start Project
-      </button>
-    </div>
-)}
+{(project.status || "recruiting") === "recruiting" ? (
+  <div className="mb-4">
+    <button
+      onClick={() => handleStartProject(project._id)}
+      className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl font-semibold"
+    >
+      🚀 Start Project
+    </button>
+  </div>
+) : project.status === "active" ? (
+  <div className="mb-4">
+    <button
+      onClick={() =>
+        navigate(`/projects/${project._id}/workspace`)
+      }
+      className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl font-semibold"
+    >
+      🚀 Open Workspace
+    </button>
+  </div>
+) : null}
 
                         <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1.5">
                           
